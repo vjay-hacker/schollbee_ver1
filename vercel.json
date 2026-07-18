@@ -2,10 +2,11 @@
   "version": 2,
   "buildCommand": "pnpm build",
   "installCommand": "pnpm install",
-  "outputDirectory": "public",
+  "outputDirectory": "apps/web/dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.ts" },
-    { "source": "/metrics", "destination": "/api/index.ts" }
+    { "source": "/metrics", "destination": "/api/index.ts" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {

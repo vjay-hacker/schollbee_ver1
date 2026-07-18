@@ -19,7 +19,9 @@
     "dev:api": "pnpm --filter @schoolbee/api dev",
     "dev:mobile": "pnpm --filter @schoolbee/mobile dev",
     "build:api": "pnpm --filter @schoolbee/api build",
-    "build:mobile": "pnpm --filter @schoolbee/mobile build"
+    "build:mobile": "pnpm --filter @schoolbee/mobile build",
+    "build:web": "pnpm --filter @schoolbee/web build",
+    "dev:web": "pnpm --filter @schoolbee/web dev"
   },
   "devDependencies": {
     "turbo": "^2.4.0",

@@ -1,0 +1,99 @@
+:root {
+  --bg-dark: #0F0F23;
+  --bg-surface: #1A1A3E;
+  --bg-card: #25254B;
+  --primary: #6C5CE7;
+  --primary-glow: rgba(108, 92, 231, 0.15);
+  --secondary: #00CEC9;
+  --accent: #FD79A8;
+  --text-main: #F8F9FE;
+  --text-muted: #A0A0C5;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%);
+  --gradient-card: linear-gradient(145deg, #1A1A3E 0%, #11112C 100%);
+  --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light mode overrides if active */
+.light-theme {
+  --bg-dark: #F4F6FA;
+  --bg-surface: #FFFFFF;
+  --bg-card: #F8F9FE;
+  --text-main: #1E1E38;
+  --text-muted: #64748B;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --gradient-card: linear-gradient(145deg, #FFFFFF 0%, #F8F9FE 100%);
+  --shadow-lg: 0 10px 30px -10px rgba(99, 102, 241, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Utility classes */
+.glass {
+  background: rgba(26, 26, 62, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+}
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+
+.animate-fade {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-slide {
+  animation: slideIn 0.3s ease forwards;
+}
