@@ -101,7 +101,7 @@ export const createSchoolSchema = z.object({
   logo: z.string().url().optional(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#6C5CE7'),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#00CEC9'),
-  planTier: z.nativeEnum(PlanTier).default(PlanTier.TRIAL),
+  planTier: z.nativeEnum(PlanTier).default(PlanTier.FREE),
 });
 
 export const updateSchoolSchema = createSchoolSchema.partial();

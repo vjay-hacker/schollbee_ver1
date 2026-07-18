@@ -75,7 +75,7 @@ router.post('/assignments', requireAuth, async (req: Request, res: Response, nex
     if (error) throw new BadRequestError(error.message);
 
     logger.info(`Assignment created: ${data.id} by teacher ${req.user?.id}`);
-    return ApiResponse.created(res, data, 'Assignment created successfully');
+    return ApiResponse.success(res, data, 201);
   } catch (error) {
     next(error);
   }

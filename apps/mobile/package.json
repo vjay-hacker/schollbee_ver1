@@ -28,7 +28,7 @@
     "@reduxjs/toolkit": "^2.2.5",
     "react-hook-form": "^7.51.5",
     "zod": "^3.24.0",
-    "@hookform/validators": "^0.0.1",
+    "@hookform/resolvers": "^3.9.0",
     "react-native-reanimated": "~3.10.1"
   },
   "devDependencies": {

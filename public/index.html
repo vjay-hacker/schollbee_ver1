@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SchoolBee Core API</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0F0F23;
+      --bg-surface: #1A1A3E;
+      --bg-card: #25254B;
+      --primary: #6C5CE7;
+      --primary-glow: rgba(108, 92, 231, 0.15);
+      --secondary: #00CEC9;
+      --accent: #FD79A8;
+      --text-main: #F8F9FE;
+      --text-muted: #A0A0C5;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Background Gradients */
+    .bg-blobs {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.12;
+    }
+
+    .blob-1 {
+      top: -10%;
+      left: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: var(--primary);
+    }
+
+    .blob-2 {
+      bottom: -10%;
+      right: -10%;
+      width: 40vw;
+      height: 40vw;
+      background: var(--secondary);
+    }
+
+    header {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      font-size: 2.25rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.75rem;
+      letter-spacing: -0.03em;
+      background: var(--text-main);
+      -webkit-background-clip: text;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 206, 201, 0.1);
+      border: 1px solid rgba(0, 206, 201, 0.2);
+      color: var(--secondary);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--secondary);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--secondary);
+      animation: blink 2s infinite;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 2rem 4rem 2rem;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 800px;
+      margin: 2rem auto 1rem auto;
+    }
+
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.5rem;
+    }
+
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.875rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: #0F0F23;
+      border: none;
+      box-shadow: 0 4px 20px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(108, 92, 231, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    /* Grid Sections */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(20px);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(108, 92, 231, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-icon {
+      color: var(--secondary);
+      font-size: 1.5rem;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    /* Table Section */
+    .endpoints-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      backdrop-filter: blur(20px);
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 1.25rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .method {
+      display: inline-block;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.375rem;
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .method-get {
+      background: rgba(0, 206, 201, 0.1);
+      color: var(--secondary);
+    }
+
+    .method-post {
+      background: rgba(108, 92, 231, 0.1);
+      color: var(--primary);
+    }
+
+    .endpoint-path {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    footer {
+      width: 100%;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-top: auto;
+      z-index: 10;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.85; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <header>
+    <div class="logo-container">
+      <span class="logo-icon">🐝</span>
+      <span class="logo-text">SchoolBee</span>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      API Online & Operational
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>SchoolBee Core <span class="gradient-text">Engine API</span></h1>
+      <p>The centralized, secure multi-tenant platform backing SchoolBee apps. Engineered with Supabase, Redis, and Row-Level Security for next-generation school logistics and communication.</p>
+      <div class="cta-group">
+        <a href="/api/v1/health" class="btn btn-primary">Run Health Check</a>
+        <a href="/metrics" class="btn btn-secondary">View Metrics</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <div class="card-title">
+          <span class="card-icon">⚡</span>
+          Real-time Engine
+        </div>
+        <p>Built-in integration for bus GPS logs, notifications dispatch, and instant parent-teacher messaging powered by Supabase and Redis caching layers.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span class="card-icon">🔒</span>
+          Isolated Tenancy
+        </div>
+        <p>Strict schema isolation and PostgreSQL Row-Level Security (RLS) policies keep school, teacher, student, and parent data securely separated under a unified API structure.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span class="card-icon">📈</span>
+          Enterprise Metrics
+        </div>
+        <p>Pre-instrumented with Prometheus metrics covering request durations, database performance, AI workloads, and tenant segmentations ready for Grafana scraping.</p>
+      </div>
+    </section>
+
+    <section class="endpoints-section">
+      <h2 class="section-title">Core API Endpoints Reference</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="method method-get">GET</span></td>
+              <td class="endpoint-path">/api/v1/health</td>
+              <td>Validate platform uptime, current node status, and service health check metrics.</td>
+            </tr>
+            <tr>
+              <td><span class="method method-post">POST</span></td>
+              <td class="endpoint-path">/api/v1/auth/login</td>
+              <td>Authenticate user credentials and issue secure JSON Web Token for school contexts.</td>
+            </tr>
+            <tr>
+              <td><span class="method method-get">GET</span></td>
+              <td class="endpoint-path">/api/v1/students</td>
+              <td>Fetch current school student registers, parent associations, and log information.</td>
+            </tr>
+            <tr>
+              <td><span class="method method-post">POST</span></td>
+              <td class="endpoint-path">/api/v1/attendance</td>
+              <td>Record daily attendance, configure custom registers, and submit class states.</td>
+            </tr>
+            <tr>
+              <td><span class="method method-post">POST</span></td>
+              <td class="endpoint-path">/api/v1/transport/trips</td>
+              <td>Trigger GPS routes, log passenger details, and track live transport coordinates.</td>
+            </tr>
+            <tr>
+              <td><span class="method method-post">POST</span></td>
+              <td class="endpoint-path">/api/v1/ai/chat</td>
+              <td>Query the platform's AI Assistant for natural language summaries of school activities.</td>
+            </tr>
+            <tr>
+              <td><span class="method method-get">GET</span></td>
+              <td class="endpoint-path">/metrics</td>
+              <td>Retrieve raw metrics endpoint output formatted specifically for Prometheus scraping.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 SchoolBee Inc. All rights reserved. Powered by Vercel Serverless Functions.</p>
+  </footer>
+</body>
+</html>

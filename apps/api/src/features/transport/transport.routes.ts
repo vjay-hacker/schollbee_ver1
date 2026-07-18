@@ -142,8 +142,8 @@ router.get('/live/:studentId', requireAuth, async (req: Request, res: Response, 
   }
 });
 
-function isSuperAdmin(roles: any[]): boolean {
-  return roles.some(r => r.role === UserRole.SUPER_ADMIN);
+function isSuperAdmin(roles: any[] | undefined): boolean {
+  return !!roles && roles.some(r => r.role === UserRole.SUPER_ADMIN);
 }
 
 export default router;

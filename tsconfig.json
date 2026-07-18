@@ -16,8 +16,7 @@
     "composite": true
   },
   "references": [
-    { "path": "./packages/shared-types" },
-    { "path": "./apps/api" }
+    { "path": "./packages/shared-types" }
   ],
   "exclude": ["node_modules", "dist", "apps/mobile"]
 }

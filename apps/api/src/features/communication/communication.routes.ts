@@ -151,11 +151,11 @@ router.post('/circulars', requireAuth, async (req: Request, res: Response, next:
       }
     }
 
-    return ApiResponse.created(res, {
+    return ApiResponse.success(res, {
       ...circular,
       translations,
       notification_queued: true,
-    }, 'Circular published successfully');
+    }, 201);
   } catch (error) {
     next(error);
   }
@@ -263,7 +263,7 @@ router.post('/chat', requireAuth, async (req: Request, res: Response, next: Next
     });
 
     logger.info(`Chat message sent: ${senderId} → ${body.recipient_id} (thread: ${threadKey})`);
-    return ApiResponse.created(res, message, 'Message sent');
+    return ApiResponse.success(res, message, 201);
   } catch (error) {
     next(error);
   }
