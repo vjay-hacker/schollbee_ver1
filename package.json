@@ -1,0 +1,28 @@
+{
+  "name": "schoolbee",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SchoolBee — Multi-Tenant School Management SaaS Platform",
+  "author": "SchoolBee Inc.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "dev:api": "pnpm --filter @schoolbee/api dev",
+    "dev:mobile": "pnpm --filter @schoolbee/mobile dev",
+    "build:api": "pnpm --filter @schoolbee/api build",
+    "build:mobile": "pnpm --filter @schoolbee/mobile build"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  }
+}

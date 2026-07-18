@@ -1,0 +1,88 @@
+# ============================================
+# SchoolBee API — Hardened Production Dockerfile
+# Multi-stage: deps → builder → production
+# ============================================
+
+# ─── Stage 1: Dependency installer ───────────────────────────────────────────
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+# Install pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Copy only manifests first (layer cache optimization)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY apps/api/package.json ./apps/api/
+
+# Install ALL dependencies (including dev for build step)
+RUN pnpm install --frozen-lockfile
+
+# ─── Stage 2: Builder ─────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Copy installed deps from previous stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types/node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+
+# Copy source
+COPY packages/shared-types/ ./packages/shared-types/
+COPY apps/api/ ./apps/api/
+COPY package.json pnpm-workspace.yaml turbo.json ./
+
+# Build shared-types first, then API
+RUN pnpm --filter @schoolbee/shared-types build && \
+    pnpm --filter @schoolbee/api build
+
+# ─── Stage 3: Production runner ───────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+LABEL org.opencontainers.image.title="SchoolBee API"
+LABEL org.opencontainers.image.description="SchoolBee multi-tenant school management API"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.vendor="SchoolBee"
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Security: create non-root user
+RUN addgroup --system --gid 1001 schoolbee && \
+    adduser --system --uid 1001 --ingroup schoolbee --no-create-home schoolbee
+
+# Copy workspace manifests
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY apps/api/package.json ./apps/api/
+
+# Install production deps only
+RUN pnpm install --frozen-lockfile --prod && \
+    pnpm store prune
+
+# Copy compiled output from builder
+COPY --from=builder --chown=schoolbee:schoolbee /app/packages/shared-types/dist ./packages/shared-types/dist
+COPY --from=builder --chown=schoolbee:schoolbee /app/apps/api/dist ./apps/api/dist
+
+# Runtime environment
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV LOG_LEVEL=info
+
+# Expose API port
+EXPOSE 3001
+
+# Liveness probe: lightweight HTTP check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:3001/api/v1/health | grep -q '"status":"OK"' || exit 1
+
+# Drop to non-root
+USER schoolbee
+
+# Graceful startup
+CMD ["node", "--max-old-space-size=768", "apps/api/dist/server.js"]

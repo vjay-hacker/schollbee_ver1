@@ -1,0 +1,69 @@
+---
+# ── NGINX Ingress with TLS ────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: schoolbee-api-ingress
+  namespace: schoolbee
+  annotations:
+    # cert-manager for automatic TLS certificates
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # NGINX ingress annotations
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    
+    # Rate limiting (per IP)
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+    
+    # CORS for mobile app
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://schoolbee.app,https://admin.schoolbee.app"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,X-School-ID"
+    
+    # Compression
+    nginx.ingress.kubernetes.io/server-snippet: |
+      gzip on;
+      gzip_types application/json text/plain;
+      gzip_min_length 1024;
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.schoolbee.app
+        - staging-api.schoolbee.app
+      secretName: schoolbee-tls
+  rules:
+    - host: api.schoolbee.app
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: schoolbee-api
+                port:
+                  name: http
+    - host: staging-api.schoolbee.app
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: schoolbee-api
+                port:
+                  name: http

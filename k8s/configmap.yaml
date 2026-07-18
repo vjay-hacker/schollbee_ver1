@@ -1,0 +1,92 @@
+---
+# ── ConfigMap — Non-secret environment config ─────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schoolbee-config
+  namespace: schoolbee
+data:
+  NODE_ENV: "production"
+  PORT: "3001"
+  LOG_LEVEL: "info"
+  API_VERSION: "v1"
+  CORS_ORIGINS: "https://schoolbee.app,https://admin.schoolbee.app"
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "500"
+  AUTH_RATE_LIMIT_MAX: "100"
+  MAX_REQUEST_BODY_SIZE: "10mb"
+  REQUEST_TIMEOUT_MS: "30000"
+  REDIS_URL: "redis://schoolbee-redis:6379"
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "3001"
+  METRICS_PATH: "/metrics"
+---
+# ── ConfigMap — Redis configuration ──────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: schoolbee
+data:
+  redis.conf: |
+    appendonly yes
+    appendfsync everysec
+    maxmemory 512mb
+    maxmemory-policy allkeys-lru
+    tcp-keepalive 60
+    timeout 300
+    loglevel notice
+    protected-mode yes
+    save 900 1
+    save 300 10
+    save 60 10000
+---
+# ── Secrets Template (fill in values, apply with kubectl) ─────────────────────
+# IMPORTANT: In real deployments, use Sealed Secrets or External Secrets Operator
+# to avoid committing plaintext secrets to git.
+#
+# Steps to apply secrets:
+#   kubectl create secret generic schoolbee-secrets \
+#     --from-literal=SUPABASE_URL='https://xxx.supabase.co' \
+#     --from-literal=SUPABASE_ANON_KEY='your_anon_key' \
+#     --from-literal=SUPABASE_SERVICE_ROLE_KEY='your_service_role_key' \
+#     --from-literal=JWT_SECRET='your_32_char_minimum_secret' \
+#     --from-literal=REDIS_PASSWORD='your_redis_password' \
+#     --from-literal=OPENAI_API_KEY='sk-...' \
+#     --from-literal=GOOGLE_MAPS_API_KEY='AIza...' \
+#     --from-literal=FCM_PROJECT_ID='your-firebase-project' \
+#     --from-literal=FCM_CLIENT_EMAIL='firebase-adminsdk@project.iam.gserviceaccount.com' \
+#     --from-literal=FCM_PRIVATE_KEY='-----BEGIN RSA PRIVATE KEY-----...' \
+#     --from-literal=SMTP_HOST='smtp.sendgrid.net' \
+#     --from-literal=SMTP_PORT='587' \
+#     --from-literal=SMTP_USER='apikey' \
+#     --from-literal=SMTP_PASS='SG....' \
+#     --from-literal=WHATSAPP_API_KEY='your_key' \
+#     -n schoolbee
+#
+# Do NOT store the actual values in this file.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: schoolbee-secrets
+  namespace: schoolbee
+  annotations:
+    # Use: https://github.com/bitnami-labs/sealed-secrets in production
+    kubernetes.io/description: "Replace with real values using kubectl or Sealed Secrets"
+type: Opaque
+stringData:
+  SUPABASE_URL: "REPLACE_ME"
+  SUPABASE_ANON_KEY: "REPLACE_ME"
+  SUPABASE_SERVICE_ROLE_KEY: "REPLACE_ME"
+  JWT_SECRET: "REPLACE_ME_32_CHARS_MINIMUM"
+  REDIS_PASSWORD: "REPLACE_ME"
+  OPENAI_API_KEY: "REPLACE_ME"
+  GOOGLE_MAPS_API_KEY: "REPLACE_ME"
+  FCM_PROJECT_ID: "REPLACE_ME"
+  FCM_CLIENT_EMAIL: "REPLACE_ME"
+  FCM_PRIVATE_KEY: "REPLACE_ME"
+  SMTP_HOST: "REPLACE_ME"
+  SMTP_PORT: "587"
+  SMTP_USER: "REPLACE_ME"
+  SMTP_PASS: "REPLACE_ME"
+  WHATSAPP_API_KEY: "REPLACE_ME"

@@ -1,0 +1,86 @@
+# ============================================
+# SchoolBee — Development Docker Compose
+# Fast iteration: hot reload, exposed ports,
+# no replicas, volume mounts for live code
+# ============================================
+
+version: '3.9'
+
+services:
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+      target: builder          # Stop at builder stage (includes devDeps)
+    container_name: schoolbee-api-dev
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+      - "9229:9229"            # Node.js debugger
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - LOG_LEVEL=debug
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - ../.env.development
+    volumes:
+      - ../apps/api/src:/app/apps/api/src:delegated    # Live reload
+      - ../packages/shared-types/src:/app/packages/shared-types/src:delegated
+    command: pnpm --filter @schoolbee/api dev
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - schoolbee-dev
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: schoolbee-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly no --loglevel verbose
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - schoolbee-dev
+
+  # Redis GUI for dev debugging
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: schoolbee-redis-gui
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - schoolbee-dev
+
+  # Mailhog: catch all outgoing emails in dev
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: schoolbee-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"    # SMTP
+      - "8025:8025"    # Web UI
+    networks:
+      - schoolbee-dev
+
+networks:
+  schoolbee-dev:
+    driver: bridge
+    name: schoolbee-dev

@@ -1,0 +1,140 @@
+---
+# ── API Deployment ────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schoolbee-api
+  namespace: schoolbee
+  labels:
+    app: schoolbee-api
+    tier: backend
+    version: "1.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: schoolbee-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Allow 1 extra pod during update
+      maxUnavailable: 0  # Never take a pod down before new one is ready
+  template:
+    metadata:
+      labels:
+        app: schoolbee-api
+        tier: backend
+        version: "1.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security context for the pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      
+      # Anti-affinity: spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: [schoolbee-api]
+                topologyKey: kubernetes.io/hostname
+
+      # Graceful termination
+      terminationGracePeriodSeconds: 30
+
+      containers:
+        - name: api
+          image: schoolbee/api:production
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              name: http
+              protocol: TCP
+
+          # Environment from ConfigMap + Secrets
+          envFrom:
+            - configMapRef:
+                name: schoolbee-config
+            - secretRef:
+                name: schoolbee-secrets
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1500m
+              memory: 768Mi
+
+          # Liveness probe — restart if hung
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe — remove from LB if not ready
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+            successThreshold: 1
+
+          # Startup probe — allow slow cold starts
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3001
+            failureThreshold: 30
+            periodSeconds: 5
+
+          # Security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          # Writable tmp for Node.js
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: logs
+              mountPath: /app/logs
+
+          # Graceful shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+
+      imagePullSecrets:
+        - name: dockerhub-credentials

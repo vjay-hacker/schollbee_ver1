@@ -1,0 +1,106 @@
+---
+# ── Redis StatefulSet with persistent storage ─────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: schoolbee-redis
+  namespace: schoolbee
+  labels:
+    app: schoolbee-redis
+    tier: cache
+spec:
+  serviceName: schoolbee-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schoolbee-redis
+  template:
+    metadata:
+      labels:
+        app: schoolbee-redis
+        tier: cache
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"     # Redis exporter sidecar
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 600Mi
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: redis-config
+              mountPath: /etc/redis
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+        # Sidecar: Redis exporter for Prometheus
+        - name: redis-exporter
+          image: oliver006/redis_exporter:latest
+          ports:
+            - containerPort: 9121
+              name: metrics
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi
+---
+# ── Redis Headless Service ────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: schoolbee-redis
+  namespace: schoolbee
+spec:
+  clusterIP: None
+  selector:
+    app: schoolbee-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379

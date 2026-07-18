@@ -1,0 +1,23 @@
+# Auto-detect text files and normalize line endings to LF on checkin
+* text=auto eol=lf
+
+# Shell scripts must always be LF (they break on CRLF)
+*.sh text eol=lf
+Makefile text eol=lf
+
+# Windows-specific files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files — never convert
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.jks binary
+*.p12 binary
+*.mobileprovision binary
